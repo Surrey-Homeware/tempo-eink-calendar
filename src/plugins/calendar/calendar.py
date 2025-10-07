@@ -2,10 +2,12 @@ import os
 from utils.app_utils import resolve_path, get_font
 from plugins.base_plugin.base_plugin import BasePlugin
 from plugins.calendar.constants import LOCALE_MAP, FONT_SIZES
+from plugins.calendar.stream_ical import load_ics_in_date_range
 from PIL import Image, ImageColor, ImageDraw, ImageFont
-import icalendar
+import tempfile
+import urllib.request
+import shutil
 import recurring_ical_events
-from io import BytesIO
 import logging
 import requests
 from datetime import datetime, timedelta
@@ -27,7 +29,7 @@ class Calendar(BasePlugin):
 
         if not view:
             raise RuntimeError("View is required")
-        elif view not in ["timeGridDay", "timeGridWeek", "dayGridMonth", "listMonth"]:
+        elif view not in ["timeGridDay", "timeGridWeek", "dayGridMonth", "listMonth", "listWeek", "listYear", "listDay"]:
             raise RuntimeError("Invalid view")
 
         if not calendar_urls:
@@ -71,26 +73,28 @@ class Calendar(BasePlugin):
     
     def fetch_ics_events(self, calendar_urls, colors, tz, start_range, end_range):
         parsed_events = []
+        # De-duplicate events - Google sometimes duplicates specific and reoccuring events
+        seen_events = set()
 
         for calendar_url, color in zip(calendar_urls, colors):
-            cal = self.fetch_calendar(calendar_url)
-            events = recurring_ical_events.of(cal).between(start_range, end_range)
+            events = self.fetch_calendar(calendar_url, start_range, end_range)
             contrast_color = self.get_contrast_color(color)
-
             for event in events:
                 start, end, all_day = self.parse_data_points(event, tz)
-                parsed_event = {
-                    "title": str(event.get("summary")),
-                    "start": start,
-                    "backgroundColor": color,
-                    "textColor": contrast_color,
-                    "allDay": all_day
-                }
-                if end:
-                    parsed_event['end'] = end
+                event_key = str(event.get("summary")) + "_" + str(event.get("dtstart"))
+                if event_key not in seen_events:
+                    parsed_event = {
+                        "title": str(event.get("summary")),
+                        "start": start,
+                        "backgroundColor": color,
+                        "textColor": contrast_color,
+                        "allDay": all_day
+                    }
+                    if end:
+                      parsed_event['end'] = end
 
-                parsed_events.append(parsed_event)
-
+                    parsed_events.append(parsed_event)
+                    seen_events.add(event_key)
         return parsed_events
     
     def get_view_range(self, view, current_dt, settings):
@@ -108,8 +112,8 @@ class Calendar(BasePlugin):
         elif view == "dayGridMonth":
             start = datetime(current_dt.year, current_dt.month, 1) - timedelta(weeks=1)
             end = datetime(current_dt.year, current_dt.month, 1) + timedelta(weeks=6)
-        elif view == "listMonth":
-            end = start + timedelta(weeks=5)
+        elif view.startswith("list"):
+            end = start + timedelta(weeks=2)
         return start, end
         
     def parse_data_points(self, event, tz):
@@ -133,11 +137,18 @@ class Calendar(BasePlugin):
             end = (dtstart + duration).isoformat()
         return start, end, all_day
 
-    def fetch_calendar(self, calendar_url):
+    def fetch_calendar(self, calendar_url, start_range, end_range):
         try:
-            response = requests.get(calendar_url)
-            response.raise_for_status()
-            return icalendar.Calendar.from_ical(response.text)
+            with (urllib.request.urlopen(calendar_url) as response,
+                  tempfile.NamedTemporaryFile(delete=True, delete_on_close=False,  suffix=".ics") as tmp_file):
+                logger.info(f"Downloading .ics file at {calendar_url}")
+                shutil.copyfileobj(response, tmp_file)
+                tmp_file.flush()
+                temp_path = tmp_file.name
+                logger.info(f"Saved .ics file to {temp_path}")
+                l = list(load_ics_in_date_range(temp_path, return_type="event", start=start_range, end=end_range))
+                logger.info(f"Found {len(l)} events in .ics file from {calendar_url}")
+                return l
         except Exception as e:
             raise RuntimeError(f"Failed to fetch iCalendar url: {str(e)}")
 

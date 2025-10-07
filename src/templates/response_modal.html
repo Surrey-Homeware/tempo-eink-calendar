@@ -1,7 +1,30 @@
-<!-- Reusable Success/Failure Notification Modal -->
-<div id="responseModal" class="response-modal success-failure-modal">
-    <div id="modalContent" class="response-modal-content">
-        <span class="close-button" onclick="closeResponseModal()">×</span>
-        <p id="modalMessage"></p>
+<!-- Reusable Success/Failure Toast -->
+<div
+  id="responseModal"
+  class="response-modal success-failure-modal"
+  aria-live="polite"
+  aria-atomic="true"
+  style="display:none"
+>
+  <div id="modalContent" class="response-modal-content" role="alert">
+    <div class="toast-icon" aria-hidden="true">
+      <!-- Default icon (will be tinted by CSS) -->
+      <svg viewBox="0 0 24 24" class="icon" focusable="false" aria-hidden="true">
+        <path d="M11 7h2v6h-2V7zm0 8h2v2h-2v-2z"/>
+      </svg>
     </div>
+
+    <p id="modalMessage" class="toast-message"></p>
+
+    <button
+      class="toast-close"
+      type="button"
+      aria-label="Dismiss notification"
+      onclick="closeResponseModal()"
+    >
+      <svg viewBox="0 0 24 24" class="icon" focusable="false" aria-hidden="true">
+        <path d="M18.3 5.71 12 12.01l-6.3-6.3-1.4 1.41 6.29 6.3-6.3 6.3 1.41 1.41 6.3-6.29 6.3 6.3 1.41-1.41-6.29-6.3 6.3-6.3z"/>
+      </svg>
+    </button>
+  </div>
 </div>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Help • Add Google Calendar via iCal (Secret URL)</title>
+
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/main.css') }}" />
+
+  <style>
+    /* Page-specific micro tweaks (still uses your variables) */
+    .lede { color: var(--text-subtle); margin-top: 6px; }
+    .steps { counter-reset: step; display: grid; gap: 14px; padding: 0; margin: 0; list-style: none; }
+    .step {
+      display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start;
+      background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
+    }
+    .step::before{
+      counter-increment: step;
+      content: counter(step);
+      display: inline-grid; place-items: center;
+      width: 28px; height: 28px; border-radius: 999px;
+      background: var(--brand); color: #fff; font-weight: 700;
+    }
+    .kbd { display:inline-block; padding: 1px 6px; border:1px solid var(--outline); border-bottom-width:2px; border-radius:6px; background:#fff; font-weight:600; }
+    .note { display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background: var(--surface-2); }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#fff; border:1px solid var(--outline); border-radius:8px; padding:2px 6px; }
+    .bullet { margin: 8px 0 0 22px; }
+    .card-body { padding: 18px; } /* ensure default card body spacing */
+    .list-compact { margin: 0; padding-left: 18px; }
+    .anchor-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  </style>
+
+  <script>
+    function toggleCollapsible(btn){
+      const content = btn.nextElementSibling;
+      const icon = btn.querySelector('.collapsible-icon');
+      const open = content.style.display !== 'block';
+      content.style.display = open ? 'block' : 'none';
+      icon.textContent = open ? '▲' : '▼';
+    }
+  </script>
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <div class="header-left">
+        <h1 class="title">Add Your Google Calendar to this display with an iCal link</h1>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding: 24px 0 40px;">
+    <!-- Quick steps -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="section-title">Step by Step</h2>
+      </div>
+      <div class="card-body">
+        <p class="lede">To set up the display, we'll copy your Google calendar’s <strong>secret iCal address</strong> and paste it into the <em>Calendar configuration</em> screen here.</p>
+        <p class="lede">If you use a different calendar provider (<a href="https://www.google.com/search?q=ms+outlook+find+ics+secret+link" target="_blank">MS Outlook</a>, <a href="https://www.google.com/search?q=apple+calendar+find+ics+secret+link" target="_blank">Apple Calendar</a>, etc), the steps will be very similar, but you'll have to find the instructions for looking up your calendar's iCal link.</p>
+        <ol class="steps">
+          <li class="step">
+            <div>
+                <strong>Open your Google Calendar on the web</strong> at <a href="https://calendar.google.com" target="_blank">https://calendar.google.com</a>.
+                <br/><br/>Click on <span class="kbd">⚙︎</span> <strong>Settings</strong> button and then choose the <strong>Settings</strong> menu option.
+                <br/><br/>In the left sidebar, find <strong>Settings for my calendars</strong> and then click on the specific calendar you want to add.
+            </div>
+          </li>
+          <li class="step">
+            <div>
+              For the selected Calndar, click <strong>Integrate calendar</strong>.
+            <br/><br/>Find <strong>Secret address in iCal format</strong> and click <strong>Copy</strong>.
+              <div class="note" style="margin-top:8px;">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5Zm0 7L2 4v11l10 5 10-5V4L12 9Z"/></svg>
+                <div><strong>Keep it private:</strong> Anyone with this URL can read the calendar. Treat it like a password.</div>
+              </div>
+            </div>
+          </li>
+          <li class="step">
+            <div>
+              In this app, go to <strong>Calendar settings</strong>
+                <br/><br/>Under Calendar iCal Links, paste the URL into the <em>Calendar URL</em> field.
+                <br/><br/>If you have more than one Google calendar, you can repeat these steps to find the iCal link for each one and add more than one.
+                <br/><br/>Finally, configure the calendar style's as desired, and click <strong>Save changes</strong>.
+            </div>
+          </li>
+          <li class="step">
+            <div>
+              Back on the main page, and click <strong>Refresh E-ink display now</strong> to refresh the screen with the latest events.
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Troubleshooting & FAQ -->
+    <section class="card" style="margin-top: 20px;">
+      <div class="card-head">
+        <h2 class="section-title">Troubleshooting & FAQ</h2>
+      </div>
+      <div class="card-body">
+
+        <div class="collapsible" style="margin-bottom:10px;">
+          <button type="button" class="collapsible-header" onclick="toggleCollapsible(this)">
+            <span>I don’t see “Secret address in iCal format”.</span>
+            <span class="collapsible-icon">▼</span>
+          </button>
+          <div class="collapsible-content" style="display:none">
+            <p>Your Google Workspace admin may hide secret addresses. Two options:</p>
+            <ul class="bullet">
+              <li>Ask the calendar owner/admin to provide the iCal link or enable access.</li>
+              <li>Make the calendar public (not recommended for private data), then use the <em>Public address in iCal format</em>.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="collapsible" style="margin-bottom:10px;">
+          <button type="button" class="collapsible-header" onclick="toggleCollapsible(this)">
+            <span>Events are missing or delayed.</span>
+            <span class="collapsible-icon">▼</span>
+          </button>
+          <div class="collapsible-content" style="display:none">
+            <ul class="bullet">
+              <li>iCal feeds aren’t always instant; updates can take a bit to propagate.</li>
+              <li>Press <strong>Refresh now</strong> on the main page to fetch again.</li>
+              <li>Check the calendar’s time zone in Google Calendar vs. your device time zone in System Settings.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="collapsible" style="margin-bottom:10px;">
+          <button type="button" class="collapsible-header" onclick="toggleCollapsible(this)">
+            <span>I get an error (403/404) after pasting the URL.</span>
+            <span class="collapsible-icon">▼</span>
+          </button>
+          <div class="collapsible-content" style="display:none">
+            <ul class="bullet">
+              <li><strong>403 Forbidden:</strong> The secret link might have been revoked, or the calendar isn’t accessible. Recopy the URL.</li>
+              <li><strong>404 Not Found:</strong> The URL may be truncated. Make sure it ends with <span class="mono">basic.ics</span>.</li>
+              <li>Verify you copied the <em>Secret address in iCal format</em>, not a web link to the calendar UI.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <button type="button" class="collapsible-header" onclick="toggleCollapsible(this)">
+            <span>Security best practices</span>
+            <span class="collapsible-icon">▼</span>
+          </button>
+          <div class="collapsible-content" style="display:none">
+            <div class="note">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a8 8 0 0 0-8 8v3a8 8 0 0 0 16 0v-3a8 8 0 0 0-8-8Zm1 13h-2v-2h2v2Zm0-4h-2V7h2v4Z"/></svg>
+              <div>
+                <ul class="bullet" style="margin-top:0;">
+                  <li>Treat your secret iCal link like a password—don’t share it publicly.</li>
+                  <li>If it’s ever exposed, regenerate/revoke it in Google Calendar and update the link here.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="container footer">
+    <small></small>
+  </footer>
+</body>
+</html>

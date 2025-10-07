@@ -104,6 +104,47 @@ def get_fonts():
 def get_font_path(font_name):
     return resolve_path(os.path.join("static", "fonts", FONTS[font_name]))
 
+def generate_wifi_config_image(dimensions=(800,480)):
+    bg_color = (255,255,255)
+    text_color = (0,0,0)
+    width,height = dimensions
+
+    hostname = socket.gethostname()
+    ip = get_ip_address()
+
+    image = Image.new("RGBA", dimensions, bg_color)
+    image_draw = ImageDraw.Draw(image)
+
+    title_font_size = height * 0.145
+    image_draw.text((width/2, height * .33), "Tempo", anchor="mm", fill=text_color, font=get_font("Jost", title_font_size))
+
+    text = f"Tempo needs access to your Wifi network."
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    text = f"From your computer or phone,"
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 1.5)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    text = f"join the Wifi network called 'WiFi Connect'"
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 3)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    text = f"and open http://{hostname}.local"
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 4.5)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+
+    text = f"You will be redirected"
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 6)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    text = f"to Wifi configuration."
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 7.5)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    return image
+
 def generate_startup_image(dimensions=(800,480)):
     bg_color = (255,255,255)
     text_color = (0,0,0)
@@ -115,12 +156,24 @@ def generate_startup_image(dimensions=(800,480)):
     image = Image.new("RGBA", dimensions, bg_color)
     image_draw = ImageDraw.Draw(image)
 
-    title_font_size = width * 0.145
-    image_draw.text((width/2, height/2), "inkypi", anchor="mm", fill=text_color, font=get_font("Jost", title_font_size))
+    title_font_size = height * 0.145
+    image_draw.text((width/2, height * .33), "Tempo", anchor="mm", fill=text_color, font=get_font("Jost", title_font_size))
 
-    text = f"To get started, visit http://{hostname}.local"
-    text_font_size = width * 0.032
-    image_draw.text((width/2, height*3/4), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+    text = f"To get started, visit"
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    text = f"http://{hostname}.local"
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 1.5)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    text = f"from your computer or phone"
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 3)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
+
+    text = f"and configure a calendar."
+    text_font_size = height * 0.032
+    image_draw.text((width/2, height*.66 + (text_font_size * 4.5)), text, anchor="mm", fill=text_color, font=get_font("Jost", text_font_size))
 
     return image
 

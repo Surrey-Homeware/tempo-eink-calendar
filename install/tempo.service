@@ -1,13 +1,13 @@
 [Unit]
-Description=InkyPi App
+Description=Tempo App
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 User=root
-RuntimeDirectory=inkypi
-WorkingDirectory=/run/inkypi
-ExecStart=/usr/local/bin/inkypi
+RuntimeDirectory=tempo
+WorkingDirectory=/run/tempo
+ExecStart=/usr/local/bin/tempo
 Restart=on-failure
 RestartSec=60
 KillSignal=SIGINT

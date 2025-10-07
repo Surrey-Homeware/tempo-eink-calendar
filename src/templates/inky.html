@@ -27,7 +27,7 @@
 
         <!-- Separator -->
         <div class="separator"></div>
-        <h2 class="plugins-title">Plugins</h2>
+        <h2 class="plugins-title">Features</h2>
         <div class="button-grid">
             {% for plugin in plugins %}
             <a href="{{ url_for('plugin.plugin_page', plugin_id=plugin.id) }}" class="icon-button" title="{{ plugin.display_name }}" >

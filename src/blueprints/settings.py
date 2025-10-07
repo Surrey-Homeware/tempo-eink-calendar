@@ -106,12 +106,12 @@ def download_logs():
         if not JOURNAL_AVAILABLE:
             # Return a message when running in development mode without systemd
             buffer.write(f"Log download not available in development mode (cysystemd not installed).\n")
-            buffer.write(f"Logs would normally show InkyPi service logs from the last {hours} hours.\n")
+            buffer.write(f"Logs would normally show Tempo service logs from the last {hours} hours.\n")
             buffer.write(f"\nTo see Flask development logs, check your terminal output.\n")
         else:
             reader = JournalReader()
             reader.open(JournalOpenMode.SYSTEM)
-            reader.add_filter(Rule("_SYSTEMD_UNIT", "inkypi.service"))
+            reader.add_filter(Rule("_SYSTEMD_UNIT", "tempo.service"))
             reader.seek_realtime_usec(int(since.timestamp() * 1_000_000))
 
             for record in reader:
@@ -133,7 +133,7 @@ def download_logs():
         buffer.seek(0)
         # Add date and time to the filename
         now_str = datetime.now().strftime("%Y%m%d-%H%M%S")
-        filename = f"inkypi_{now_str}.log"
+        filename = f"tempo_{now_str}.log"
         return Response(
             buffer.read(),
             mimetype="text/plain",

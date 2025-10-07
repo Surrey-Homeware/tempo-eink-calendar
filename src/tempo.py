@@ -16,13 +16,13 @@ import json
 import logging
 import threading
 import argparse
-from utils.app_utils import generate_startup_image
+import subprocess
+from utils.app_utils import generate_startup_image, generate_wifi_config_image
 from flask import Flask, request
 from werkzeug.serving import is_running_from_reloader
 from config import Config
 from display.display_manager import DisplayManager
 from refresh_task import RefreshTask
-from blueprints.main import main_bp
 from blueprints.settings import settings_bp
 from blueprints.plugin import plugin_bp
 from blueprints.playlist import playlist_bp
@@ -33,8 +33,65 @@ from waitress import serve
 
 logger = logging.getLogger(__name__)
 
+
+def is_raspberry_pi():
+    """Check if running on a Raspberry Pi."""
+    try:
+        with open('/proc/device-tree/model', 'r') as f:
+            model = f.read()
+            return 'Raspberry Pi' in model
+    except FileNotFoundError:
+        return False
+
+
+def has_wifi_configured():
+    """Check if NetworkManager has any WiFi SSID configured."""
+    try:
+        # Run nmcli to get list of configured WiFi connections
+        result = subprocess.run(
+            ['sudo', 'nmcli', '-t', '-f', 'TYPE,NAME', 'connection', 'show'],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        if result.returncode == 0:
+            # Check if any line starts with '802-11-wireless:' (WiFi connection type)
+            # but ignore entries related to "WiFi Connect" (it's a temporary AP)
+            for line in result.stdout.strip().split('\n'):
+                if line.startswith('802-11-wireless:') and not "WiFi Connect" in line:
+                    return True
+        return False
+    except (subprocess.SubprocessError, FileNotFoundError) as e:
+        logger.warning(f"Failed to check WiFi configuration: {e}")
+        return True  # Assume WiFi is configured if check fails
+
+
+def setup_wifi_if_needed():
+    """Check and setup WiFi configuration if needed on Raspberry Pi."""
+    if not is_raspberry_pi():
+        logger.info("Not running on Raspberry Pi, skipping WiFi check")
+        return
+
+    logger.info("Running on Raspberry Pi, checking WiFi configuration")
+
+    if not has_wifi_configured():
+        logger.warning("No WiFi SSID configured, launching wifi-connect")
+        img = generate_wifi_config_image()
+        display_manager.display_image(img)
+
+        try:
+            subprocess.run(['/usr/local/sbin/wifi-connect'], check=True)
+            logger.info("wifi-connect completed")
+        except subprocess.CalledProcessError as e:
+            logger.error(f"wifi-connect failed with error: {e}")
+        except FileNotFoundError:
+            logger.error("wifi-connect not found at /usr/local/sbin/wifi-connect")
+    else:
+        logger.info("WiFi is already configured")
+
 # Parse command line arguments
-parser = argparse.ArgumentParser(description='InkyPi Display Server')
+parser = argparse.ArgumentParser(description='Tempo Display Server')
 parser.add_argument('--dev', action='store_true', help='Run in development mode')
 args = parser.parse_args()
 
@@ -43,11 +100,11 @@ if args.dev:
     Config.config_file = os.path.join(Config.BASE_DIR, "config", "device_dev.json")
     DEV_MODE = True
     PORT = 8080
-    logger.info("Starting InkyPi in DEVELOPMENT mode on port 8080")
+    logger.info("Starting Tempo in DEVELOPMENT mode on port 8080")
 else:
     DEV_MODE = False
     PORT = 80
-    logger.info("Starting InkyPi in PRODUCTION mode on port 80")
+    logger.info("Starting Tempo in PRODUCTION mode on port 80")
 logging.getLogger('waitress.queue').setLevel(logging.ERROR)
 app = Flask(__name__)
 template_dirs = [
@@ -71,17 +128,19 @@ app.config['REFRESH_TASK'] = refresh_task
 app.config['MAX_FORM_PARTS'] = 10_000
 
 # Register Blueprints
-app.register_blueprint(main_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(plugin_bp)
 app.register_blueprint(playlist_bp)
 
 if __name__ == '__main__':
 
+    # Check and setup WiFi if needed (Raspberry Pi only)
+    setup_wifi_if_needed()
+
     # start the background refresh task
     refresh_task.start()
 
-    # display default inkypi image on startup
+    # display default Tempo image on startup
     if device_config.get_config("startup") is True:
         logger.info("Startup flag is set, displaying startup image")
         img = generate_startup_image(device_config.get_resolution())

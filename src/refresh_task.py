@@ -13,7 +13,7 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 class RefreshTask:
-    """Handles the logic for refreshing the display using a backgroud thread."""
+    """Handles the logic for refreshing the display using a background thread."""
 
     def __init__(self, device_config, display_manager):
         self.device_config = device_config
@@ -50,7 +50,7 @@ class RefreshTask:
         """Background task that manages the periodic refresh of the display.
 
         This function runs in a loop, sleeping for a configured duration (`plugin_cycle_interval_seconds`) or until
-        manually triggered via `manual_update()`. Detrmines the next plugin to refresh based on active playlists and 
+        manually triggered via `manual_update()`. Determines the next plugin to refresh based on active playlists and
         updates the display accordingly.
 
         Workflow:
@@ -64,19 +64,27 @@ class RefreshTask:
         5. Updates the refresh metadata in the device configuration.
         6. Repeats the process until `stop()` is called.
 
-        Handles any exceptions that occur during the refresh process and ensures the refresh event is set 
+        Handles any exceptions that occur during the refresh process and ensures the refresh event is set
         to indicate completion.
 
         Exceptions:
         - Captures and logs any unexpected errors during execution to prevent the thread from exiting.
         """
+        first_run = True
         while True:
             try:
                 with self.condition:
                     sleep_time = self.device_config.get_config("plugin_cycle_interval_seconds", default=60*60)
 
-                    # Wait for sleep_time or until notified
-                    self.condition.wait(timeout=sleep_time)
+                    # Skip wait on first run to check if immediate refresh is needed
+                    if first_run:
+                        logging.info("First run - checking if screen refresh is needed")
+                        first_run = False
+                    else:
+                        # Wait for sleep_time or until notified
+                        logging.info("Scheduling screen refresh in %s seconds", sleep_time)
+                        self.condition.wait(timeout=sleep_time)
+
                     self.refresh_result = {}
                     self.refresh_event.clear()
 

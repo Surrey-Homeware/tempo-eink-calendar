@@ -10,64 +10,7 @@ from utils.app_utils import resolve_path, handle_request_files, parse_form
 logger = logging.getLogger(__name__)
 playlist_bp = Blueprint("playlist", __name__)
 
-@playlist_bp.route('/add_plugin', methods=['POST'])
-def add_plugin():
-    device_config = current_app.config['DEVICE_CONFIG']
-    refresh_task = current_app.config['REFRESH_TASK']
-    playlist_manager = device_config.get_playlist_manager()
-
-    try:
-        plugin_settings = parse_form(request.form)
-        refresh_settings = json.loads(plugin_settings.pop("refresh_settings"))
-        plugin_id = plugin_settings.pop("plugin_id")
-
-        playlist = refresh_settings.get('playlist')
-        instance_name = refresh_settings.get('instance_name')
-        if not playlist:
-            return jsonify({"error": "Playlist name is required"}), 400
-        if not instance_name or not instance_name.strip():
-            return jsonify({"error": "Instance name is required"}), 400
-        if not all(char.isalpha() or char.isspace() or char.isnumeric() for char in instance_name):
-            return jsonify({"error": "Instance name can only contain alphanumeric characters and spaces"}), 400
-        refresh_type = refresh_settings.get('refreshType')
-        if not refresh_type or refresh_type not in ["interval", "scheduled"]:
-            return jsonify({"error": "Refresh type is required"}), 400
-
-        existing = playlist_manager.find_plugin(plugin_id, instance_name)
-        if existing:
-            return jsonify({"error": f"Plugin instance '{instance_name}' already exists"}), 400
-
-        if refresh_type == "interval":
-            unit, interval = refresh_settings.get('unit'), refresh_settings.get("interval")
-            if not unit or unit not in ["minute", "hour", "day"]:
-                return jsonify({"error": "Refresh interval unit is required"}), 400
-            if not interval:
-                return jsonify({"error": "Refresh interval is required"}), 400
-            refresh_interval_seconds = calculate_seconds(int(interval), unit)
-            refresh_config = {"interval": refresh_interval_seconds}
-        else:
-            refresh_time = refresh_settings.get('refreshTime')
-            if not refresh_settings.get('refreshTime'):
-                return jsonify({"error": "Refresh time is required"}), 400
-            refresh_config = {"scheduled": refresh_time}
-
-        plugin_settings.update(handle_request_files(request.files))
-        plugin_dict = {
-            "plugin_id": plugin_id,
-            "refresh": refresh_config,
-            "plugin_settings": plugin_settings,
-            "name": instance_name
-        }
-        result = playlist_manager.add_plugin_to_playlist(playlist, plugin_dict)
-        if not result:
-            return jsonify({"error": "Failed to add to playlist"}), 500
-
-        device_config.write_config()
-    except Exception as e:
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-    return jsonify({"success": True, "message": "Scheduled refresh configured."})
-
-@playlist_bp.route('/playlist')
+@playlist_bp.route('/')
 def playlists():
     device_config = current_app.config['DEVICE_CONFIG']
     playlist_manager = device_config.get_playlist_manager()
@@ -75,44 +18,17 @@ def playlists():
 
     return render_template(
         'playlist.html',
-        playlist_config=playlist_manager.to_dict(),
+        playlist=playlist_manager.to_dict()['playlists'][0],
+        plugin_instance=playlist_manager.to_dict()['playlists'][0]['plugins'][0],
         refresh_info=refresh_info.to_dict()
     )
 
-@playlist_bp.route('/create_playlist', methods=['POST'])
-def create_playlist():
-    device_config = current_app.config['DEVICE_CONFIG']
-    playlist_manager = device_config.get_playlist_manager()
 
-    data = request.json
-    playlist_name = data.get("playlist_name")
-    start_time = data.get("start_time")
-    end_time = data.get("end_time")
-
-    if not playlist_name or not playlist_name.strip():
-        return jsonify({"error": "Playlist name is required"}), 400
-    if not start_time or not end_time:
-        return jsonify({"error": "Start time and End time are required"}), 400
-    if end_time <= start_time:
-        return jsonify({"error": "End time must be greater than start time"}), 400
-
-    try:
-        playlist = playlist_manager.get_playlist(playlist_name)
-        if playlist:
-            return jsonify({"error": f"Playlist with name '{playlist_name}' already exists"}), 400
-
-        result = playlist_manager.add_playlist(playlist_name, start_time, end_time)
-        if not result:
-            return jsonify({"error": "Failed to create playlist"}), 500
-
-        # save changes to device config file
-        device_config.write_config()
-
-    except Exception as e:
-        logger.exception("EXCEPTION CAUGHT: " + str(e))
-        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
-    return jsonify({"success": True, "message": "Created new Playlist!"})
+@playlist_bp.route('/calendar-help')
+def calendar_help():
+    return render_template(
+        'calendar_help.html',
+    )
 
 
 @playlist_bp.route('/update_playlist/<string:playlist_name>', methods=['PUT'])
@@ -140,23 +56,6 @@ def update_playlist(playlist_name):
     device_config.write_config()
 
     return jsonify({"success": True, "message": f"Updated playlist '{playlist_name}'!"})
-
-@playlist_bp.route('/delete_playlist/<string:playlist_name>', methods=['DELETE'])
-def delete_playlist(playlist_name):
-    device_config = current_app.config['DEVICE_CONFIG']
-    playlist_manager = device_config.get_playlist_manager()
-
-    if not playlist_name:
-        return jsonify({"error": f"Playlist name is required"}), 400
-    
-    playlist = playlist_manager.get_playlist(playlist_name)
-    if not playlist:
-        return jsonify({"error": f"Playlist '{playlist_name}' does not exist"}), 400
-
-    playlist_manager.delete_playlist(playlist_name)
-    device_config.write_config()
-
-    return jsonify({"success": True, "message": f"Deleted playlist '{playlist_name}'!"})
 
 @playlist_bp.app_template_filter('format_relative_time')
 def format_relative_time(iso_date_string):

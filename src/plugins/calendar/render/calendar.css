@@ -1,4 +1,3 @@
-/* Basic Reset */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -8,7 +7,10 @@
 .calendar {
   width: 100%;
   height: 100%;
-  font-family: "Jost";
+  font-family: "Jersey 20", sans-serif;
+  font-weight: 400 !important;
+  font-style: normal;
+  font-size: 20px;
   overflow: hidden;
 }
 
@@ -53,17 +55,53 @@
   border-right-color: transparent !important;
 }
 
-th {
+
+table, tbody, thead, tr, th, td {
+  border-color: transparent;
   border-top-color: transparent;
   border-right-color: transparent !important;
   border-left-color: transparent !important;
+  font-weight: normal;
 }
 
+.fc tr.fc-event>td.fc-list-event-time {
+  padding-bottom: 2px;
+}
 
 .fc .fc-toolbar-title {
-  font-size: var(--fc-title-font-size) !important;
+  font-family: "Jersey 25", sans-serif;
+  font-weight: 400 !important;
+  font-style: normal;
+  font-size: 25px;
 }
 
 .fc table {
-  font-size: var(--fc-table-font-size) !important;
+  font-family: "Jersey 20", sans-serif;
+  font-weight: 400 !important;
+  font-style: normal;
+  font-size: 20px;
+}
+
+.fc .fc-list-day-cushion {
+    border-bottom: 2px solid #888888;
+    background: none;
+    font-family: "Jersey 20", sans-serif;
+    font-weight: 400 !important;
+    font-style: normal;
+    font-size: 20px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.fc .fc-list-event-dot {
+    margin-top: 5px;
+}
+
+body {
+  width: 470px;
+  padding-top: 30px;
 }

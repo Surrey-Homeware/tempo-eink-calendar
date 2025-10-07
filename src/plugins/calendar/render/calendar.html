@@ -4,17 +4,16 @@
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=Jersey+20&family=Jersey+25&display=swap" rel="stylesheet">
 
 <div id="calendar" class="calendar" style="
 --fc-page-bg-color: {{ plugin_settings.backgroundColor or white }};
---fc-border-color: {{ plugin_settings.textColor }};
+--fc-border-color: #FFF;
 --fc-today-bg-color: '';
 --fc-now-indicator-color: {{ plugin_settings.nowIndicatorColor or red }};
 --fc-event-border-color: {{ plugin_settings.textColor or white }};
-
---fc-small-font-size: {{ 0.85 * font_scale }}em;
---fc-title-font-size: {{ 1.75 * font_scale }}em;
---fc-table-font-size: {{ 1 * font_scale }}em;
 ">
 
 </div>
@@ -56,7 +55,13 @@
                 center: "{{ 'title' if plugin_settings.displayTitle == 'true' else '' }}",
                 right: ''
             },
-            slotDuration: "01:00:00"
+            slotDuration: "01:00:00",
+            eventDidMount: function(info) {
+				var dotEl = info.el.getElementsByClassName('fc-list-event-title')[0].firstChild;
+				if (dotEl) {
+					// dotEl.style.backgroundColor = info.event.backgroundColor;
+				}
+            }
         });
         calendar.render();
     });

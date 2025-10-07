@@ -6,6 +6,8 @@ import logging
 import hashlib
 import tempfile
 import subprocess
+import platform
+
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +102,9 @@ def take_screenshot_html(html_str, dimensions, timeout_ms=None):
 
     return image
 
+def is_raspberry_pi():
+    return 'rpi' in platform.uname().release.lower()
+
 def take_screenshot(target, dimensions, timeout_ms=None):
     image = None
     try:
@@ -108,11 +113,11 @@ def take_screenshot(target, dimensions, timeout_ms=None):
             img_file_path = img_file.name
 
         command = [
-            "chromium-headless-shell",
+            "chromium",
             target,
             "--headless",
             f"--screenshot={img_file_path}",
-            f"--window-size={dimensions[0]},{dimensions[1]}",
+            f"--window-size={dimensions[0]},{dimensions[1] + 87}",
             "--disable-dev-shm-usage",
             "--disable-gpu",
             "--use-gl=swiftshader",
@@ -124,11 +129,23 @@ def take_screenshot(target, dimensions, timeout_ms=None):
             "--disable-extensions",
             "--disable-plugins",
             "--mute-audio",
-            "--no-sandbox"
+            "--no-sandbox",
         ]
+
+        if is_raspberry_pi():
+            command += [
+                "--user-data-dir=/tmp/chrome-temp",
+            ]
+
+
         if timeout_ms:
             command.append(f"--timeout={timeout_ms}")
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        logger.info(f"Running Chromium to capture screenshot with command: {command}")
+        # Kill chromium if it runs longer than 10 minutes (600 seconds)
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=600)
+
+        logger.info("Chromium run complete")
 
         # Check if the process failed or the output file is missing
         if result.returncode != 0 or not os.path.exists(img_file_path):
@@ -139,10 +156,20 @@ def take_screenshot(target, dimensions, timeout_ms=None):
         # Load the image using PIL
         with Image.open(img_file_path) as img:
             image = img.copy()
+            width, height = image.size
+            image = image.crop((0, 0, width, height - 87))
 
         # Remove image files
         os.remove(img_file_path)
 
+    except subprocess.TimeoutExpired:
+        logger.error("Chromium process timed out after 10 minutes and was killed")
+        # Clean up any stale chromium processes
+        try:
+            subprocess.run(["killall", "-9", "chromium"], stderr=subprocess.PIPE)
+            logger.info("Killed stale chromium processes")
+        except Exception as cleanup_error:
+            logger.warning(f"Failed to cleanup chromium processes: {str(cleanup_error)}")
     except Exception as e:
         logger.error(f"Failed to take screenshot: {str(e)}")
 

@@ -1,6 +1,6 @@
 {
+    "startup": true,
     "name": "Tempo",
-    "display_type": "mock",
     "resolution": [
         800,
         480
@@ -18,20 +18,21 @@
                         "name": "Tempo",
                         "plugin_settings": {
                             "calendarColors[]": [
-                                "#00ff00"
+                                "#0000ff"
                             ],
                             "calendarURLs[]": [
                             ],
                             "viewMode": "listYear",
-                            "language": "en",
+                            "language": "en-gb",
+                            "displayTitle": "true",
                             "displayWeekends": "true",
                             "displayEventTime": "true",
-                            "fontSize": "normal"
+                            "fontSize": "large"
                         },
                         "refresh": {
                             "interval": 60
                         },
-                        "latest_refresh_time": "2025-12-01T09:51:08.284254+00:00"
+                        "latest_refresh_time": "2025-10-08T09:39:52.147715+01:00"
                     }
                 ],
                 "current_plugin_index": 0
@@ -40,8 +41,8 @@
         "active_playlist": "Default"
     },
     "refresh_info": {
-        "refresh_time": "2025-12-01T09:51:08.284254+00:00",
-        "image_hash": "bdf7b9ed8de65106201d01dd6c0ac020771819bd16a098084d5d84d0b7bd6f86",
+        "refresh_time": "2025-10-08T09:39:52.147715+01:00",
+        "image_hash": "28be4f24faef059dc6f9ae3ff5e36d0525c574b75c089412424a4f42c8f83eeb",
         "refresh_type": "Playlist",
         "plugin_id": "calendar",
         "playlist": "Default",

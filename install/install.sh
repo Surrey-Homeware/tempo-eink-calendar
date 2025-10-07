@@ -2,8 +2,8 @@
 
 # =============================================================================
 # Script Name: install.sh
-# Description: This script automates the installatin of InkyPI and creation of
-#              the InkyPI service.
+# Description: This script automates the installation of Tempo and creation of
+#              the Tempo service.
 #
 # Usage: ./install.sh [-W <waveshare_device>]
 #        -W <waveshare_device> (optional) Install for a Waveshare device, 
@@ -27,7 +27,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPT_DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
 
-APPNAME="inkypi"
+APPNAME="tempo"
 INSTALL_PATH="/usr/local/$APPNAME"
 SRC_PATH="$SCRIPT_DIR/../src"
 BINPATH="/usr/local/bin"
@@ -231,7 +231,7 @@ install_app_service() {
 
 install_executable() {
   echo "Adding executable to ${BINPATH}/$APPNAME"
-  cp $SCRIPT_DIR/inkypi $BINPATH/
+  cp $SCRIPT_DIR/tempo $BINPATH/
   sudo chmod +x $BINPATH/$APPNAME
 }
 
@@ -322,7 +322,6 @@ ask_for_reboot() {
   echo_header "$(echo_success "${APPNAME^^} Installation Complete!")"
   echo_header "[•] A reboot of your Raspberry Pi is required for the changes to take effect"
   echo_header "[•] After your Pi is rebooted, you can access the web UI by going to $(echo_blue "'$hostname.local'") or $(echo_blue "'$ip_address'") in your browser."
-  echo_header "[•] If you encounter any issues or have suggestions, please submit them here: https://github.com/fatihak/InkyPi/issues"
 
   read -p "Would you like to restart your Raspberry Pi now? [Y/N] " userInput
   userInput="${userInput^^}"
