@@ -19,14 +19,14 @@ Works on **macOS**, **Linux**, and **Windows** - no hardware needed!
 brew install chromium --no-quarantine
 
 # Ubuntu/Debian
-sudo apt install chromium-browser
+sudo apt install chromium
 
 # Windows
 # Download and install from https://www.chromium.org/getting-involved/download-chromium
 
 # 2. Clone and setup
-git clone https://github.com/<FIXME>/tempo.git
-cd Tempo
+git clone https://github.com/Surrey-Homeware/tempo-eink-calendar.git
+cd tempo-eink-calendar/
 
 # 3. Create virtual environment
 python3 -m venv venv
